@@ -1,0 +1,10 @@
+server:
+  port: 8080
+
+#minio配置
+minio:
+  url: http://localhost:9000  #minio存储服务地址
+  accessKey: gh1K6HKXGly1N72ci87D #Access key
+  secretKey: bG95pQDC3GVfie5K3VyvsnZQrnlQtx6YgOLN0O7b  #Secret key
+  bucketName: ts_bucket
+
