@@ -5,27 +5,29 @@ import com.sun.xml.internal.bind.v2.TODO;
 import com.tiansuo.file.manage.constant.MinioPlusErrorCode;
 import com.tiansuo.file.manage.constant.StorageBucketEnums;
 import com.tiansuo.file.manage.exception.MinioPlusException;
+import com.tiansuo.file.manage.model.dto.BusinessBindFileDTO;
 import com.tiansuo.file.manage.model.dto.FileCheckDTO;
 import com.tiansuo.file.manage.model.dto.FileCompleteDTO;
-import com.tiansuo.file.manage.model.dto.PreShardingDTO;
 import com.tiansuo.file.manage.model.vo.CompleteResultVo;
 import com.tiansuo.file.manage.model.vo.FileCheckResultVo;
 import com.tiansuo.file.manage.model.vo.FilePreShardingVo;
 import com.tiansuo.file.manage.model.vo.FileUploadResultVo;
 import com.tiansuo.file.manage.response.ResultModel;
 import com.tiansuo.file.manage.service.StorageService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
+import java.util.List;
 
 /**
  * 对象存储标准接口定义
@@ -34,15 +36,11 @@ import java.io.ByteArrayInputStream;
  * @author zhangb
  * @since 2024/6/18
  */
+@Api("文件上传")
 @Slf4j
 @RestController
 @RequestMapping("/storage")
 public class StorageController {
-
-    /**
-     * 重定向
-     */
-    private static final String REDIRECT_PREFIX = "redirect:";
 
     /**
      * 存储引擎Service接口定义
@@ -62,116 +60,85 @@ public class StorageController {
 
     /**
      * 上传文件(小文件不分片)
+     *
      * @param file 上传的文件
      * @return 上传成功后的返回信息
      */
     @ApiOperation(value = "文件上传(普通)")
-    @PostMapping("/upload/file")
+    @GetMapping("/upload/file")
     public ResultModel<FileUploadResultVo> uploadFile(@RequestParam("file") MultipartFile file) {
         FileUploadResultVo fileUploadResultVo = storageService.uploadFile(file);
         return ResultModel.success(fileUploadResultVo);
     }
 
 
-    /**
-     * 文件分片上传步骤:
-     *  step1:前端调用/upload/sharding,传参文件大小,进行预分片,返回给前端分片次数
-     *  step2:
-     */
-    /**
-     * 上传分片
-     * 说明：前端通过后端上传分片到MinIO，对比：preSignUploadUrl
-     * @author 明快de玄米61
-     * @date   2022/12/15 14:56
-     * @param  file 分片文件
-     * @param  uploadId 任务id
-     * @param  partNumber 当前分片编号
-     **/
-    @PostMapping("/uploadPart")
-    public ResultModel uploadPart(@RequestPart MultipartFile file, @RequestParam String uploadId, @RequestParam Integer partNumber) {
-
-        // 上传分片
-        return storageService.uploadPart(file,uploadId,partNumber)
-        try {
-            UploadPartResponse response = minIoUtil.uploadPart(task.getBucketName(), null, task.getRemoteFileUrl(), file.getInputStream(), file.getSize(), task.getUploadId(), partNumber, null, null
-            );
-            return AjaxResult.success();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return AjaxResult.error();
-    }
 
     /**
      * 文件预分片方法
      * 在大文件上传时，为了防止前端重复计算文件MD5值，提供该方法
      *
-     * @param preShardingDTO 文件预分片入参DTO
+     * @param fileSize 文件大小
      * @return 预分片结果
      */
     @ApiOperation(value = "文件预分片方法")
-    @PostMapping("/upload/sharding")
-    public ResultModel<FilePreShardingVo> sharding(@RequestBody @Validated PreShardingDTO preShardingDTO) {
+    @GetMapping("/upload/sharding")
+    public ResultModel<FilePreShardingVo> sharding(@RequestParam("fileSize") Long fileSize) {
 
-        FilePreShardingVo resultVo = storageService.sharding(preShardingDTO.getFileSize());
+        FilePreShardingVo resultVo = storageService.sharding(fileSize);
 
         return ResultModel.success(resultVo);
     }
 
     /**
-     * 上传任务初始化
+     * 分片上传任务初始化
      * 上传前的预检查：秒传、分块上传和断点续传等特性均基于该方法实现
      *
      * @param fileCheckDTO 文件预检查入参
      * @return 检查结果
      */
-    @ApiOperation(value = "文件预分片方法")
+    @ApiOperation(value = "分片上传任务初始化")
     @PostMapping("/upload/init")
     public ResultModel<FileCheckResultVo> init(@RequestBody FileCheckDTO fileCheckDTO) {
-
-        // 取得当前登录用户信息
-        String userId = "admin";
-
-        FileCheckResultVo resultVo = storageService.init(fileCheckDTO.getFileMd5(), fileCheckDTO.getFullFileName(), fileCheckDTO.getFileSize(), fileCheckDTO.getIsPrivate(), userId);
-
+        FileCheckResultVo resultVo = storageService.init(fileCheckDTO.getFileMd5(), fileCheckDTO.getFullFileName(), fileCheckDTO.getFileSize(), fileCheckDTO.getIsPrivate());
         return ResultModel.success(resultVo);
     }
 
     /**
      * 文件上传完成
      *
-     * @param fileKey         文件KEY
      * @param fileCompleteDTO 文件完成入参DTO
      * @return 是否成功
      */
     @ApiOperation(value = "文件上传完成")
-    @PostMapping("/upload/complete/{fileKey}")
-    public ResultModel<Object> complete(String fileKey, FileCompleteDTO fileCompleteDTO) {
-
-        // 取得当前登录用户信息
-        String userId = "admin";
-
-        // 打印调试日志
-        log.debug("合并文件开始fileKey=" + fileKey + ",partMd5List=" + fileCompleteDTO.getPartMd5List());
-        CompleteResultVo completeResultVo = storageService.complete(fileKey, fileCompleteDTO.getPartMd5List(), userId);
-
+    @PostMapping("/upload/complete")
+    public ResultModel<Object> complete(@RequestBody FileCompleteDTO fileCompleteDTO) {
+        CompleteResultVo completeResultVo = storageService.complete(fileCompleteDTO.getFileKey(), fileCompleteDTO.getPartMd5List());
         return ResultModel.success(completeResultVo);
     }
 
     /**
-     * 文件下载
+     * 文件下载(返回文件地址供前端访问下载)
      *
      * @param fileKey 文件KEY
      * @return 文件下载地址
      */
-    @GetMapping("/download")
-    public String download(@RequestParam(value = "fileKey") String fileKey) {
+    @ApiOperation(value = "文件下载(返回文件地址供前端访问下载)")
+    @GetMapping("/download/url")
+    public ResultModel<String> download(@RequestParam(value = "fileKey") String fileKey) {
+        return ResultModel.success(storageService.download(fileKey));
+    }
 
-        // 取得当前登录用户信息
-        String userId = "admin";
 
-        // 取得文件读取路径
-        return REDIRECT_PREFIX + storageService.download(fileKey, userId);
+    /**
+     * 文件下载(返回文件流直接下载)
+     *
+     * @param fileKey 文件KEY
+     */
+    @ApiOperation(value = "文件下载(返回文件流直接下载)")
+    @GetMapping("/download/stream")
+    public void download(@RequestParam(value = "fileKey") String fileKey, HttpServletResponse response) {
+        storageService.getDownloadObject(fileKey,response);
+
     }
 
     /**
@@ -181,14 +148,9 @@ public class StorageController {
      * @return 原图地址
      */
     @ApiOperation(value = "图片预览 - 原图")
-    @GetMapping("/image/{fileKey}")
-    public String previewOriginal(String fileKey) {
-
-        // 取得当前登录用户信息
-        String userId = "admin";
-
-        // 取得文件读取路径
-        return REDIRECT_PREFIX + storageService.image(fileKey, userId);
+    @GetMapping("/image")
+    public ResultModel<String> previewOriginal(@RequestParam(value = "fileKey") String fileKey) {
+        return ResultModel.success(storageService.image(fileKey));
     }
 
     /**
@@ -200,20 +162,16 @@ public class StorageController {
      * @return 缩略图地址
      */
     @ApiOperation(value = "图片预览 - 缩略图")
-    @GetMapping("/preview/{fileKey}")
-    public String previewMedium(String fileKey) {
-
-        // 取得当前登录用户信息
-        String userId = "admin";
-
-        String url = storageService.preview(fileKey, userId);
+    @GetMapping("/preview")
+    public  ResultModel<String> previewMedium(@RequestParam(value = "fileKey") String fileKey) {
+        String url = storageService.preview(fileKey);
         if (url.length() < 10) {
             // 当返回值为文件类型时，取得图标
-            url = ICON_PATH + url;
+            //url = ICON_PATH + url;
         }
 
         // 取得文件读取路径
-        return REDIRECT_PREFIX + url;
+        return  ResultModel.success(url) ;
     }
 
     /**
@@ -222,8 +180,8 @@ public class StorageController {
      * @param fileType 文件扩展名
      */
     @ApiOperation(value = "获取图标")
-    @GetMapping("/icon/{fileType}")
-    public void icon(String fileType) {
+    @GetMapping("/icon")
+    public void icon(@RequestParam(value = "fileType") String fileType) {
         try {
             // 根据文件后缀取得桶
             String storageBucket = StorageBucketEnums.getBucketByFileSuffix(fileType);
@@ -243,6 +201,56 @@ public class StorageController {
             // 图标获取失败
             throw new MinioPlusException(MinioPlusErrorCode.FILE_ICON_FAILED);
         }
+    }
+
+    //todo 提供绑定businessKey的接口,和根据这个key获取文件下载地址的接口
+    //0,1的优化,日志的优化,实体类的优化
+
+    /**
+     * 绑定业务数据和文件数据
+     */
+    @ApiOperation(value = "上传的文件绑定业务数据")
+    @PostMapping("/bind/business")
+    public ResultModel bindBusinessAndFile(@RequestBody BusinessBindFileDTO businessBindFileDTO) {
+        if (storageService.bindBusinessAndFile(businessBindFileDTO.getFileKeyList(),businessBindFileDTO.getBusinessKey())){
+            return ResultModel.success("绑定成功");
+        }else{
+            return ResultModel.fail(MinioPlusErrorCode.FILE_BIND_BUSINESS_FAILED.getCode(),MinioPlusErrorCode.FILE_BIND_BUSINESS_FAILED.getMessage());
+        }
+    }
+
+    /**
+     * 根据businessKey查询绑定的文件列表
+     *
+     * @param businessKey 业务唯一标识
+     * @return 绑定的文件列表
+     */
+    @ApiOperation(value = "根据businessKey查询绑定的文件列表")
+    @GetMapping("/query/file")
+    public ResultModel<List<FileUploadResultVo>> getFileByBusinessKey(@RequestParam(value = "businessKey") String businessKey) {
+        return ResultModel.success(storageService.getFileByBusinessKey(businessKey));
+    }
+
+    /**
+     * 根据businessKey删除文件
+     *
+     * @param businessKey 业务唯一标识
+     */
+    @ApiOperation(value = "根据businessKey删除文件")
+    @GetMapping("/delete/file/businessKey")
+    public ResultModel deleteFileByBusinessKey(@RequestParam(value = "businessKey") String businessKey) {
+        return ResultModel.success(storageService.deleteFileByBusinessKey(businessKey));
+    }
+
+    /**
+     * 根据fileKey删除文件
+     *
+     * @param fileKey 文件唯一标识
+     */
+    @ApiOperation(value = "根据fileKey删除文件")
+    @GetMapping("/delete/file/fileKey")
+    public ResultModel deleteFileByFileKey(@RequestParam(value = "fileKey") String fileKey) {
+        return ResultModel.success(storageService.deleteFileByFileKey(fileKey));
     }
 
 }

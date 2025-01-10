@@ -18,7 +18,9 @@ import io.minio.http.Method;
 import io.minio.messages.Part;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
@@ -38,6 +40,7 @@ import java.util.concurrent.TimeUnit;
  * @since 2024/11/14
  */
 @Slf4j
+@Service
 public class MinioS3ClientImpl implements MinioS3Client {
 
     /**
@@ -146,7 +149,6 @@ public class MinioS3ClientImpl implements MinioS3Client {
     public ListParts listParts(String bucketName, String objectName, Integer maxParts, String uploadId) {
 
         ListParts listParts = ListParts.build();
-
         try {
             ListPartsResponse listPartsResponse = this.getClient().listPartsAsync(bucketName, null, objectName, maxParts
                     , 0, uploadId, null, null).get();
@@ -206,6 +208,17 @@ public class MinioS3ClientImpl implements MinioS3Client {
                             .expiry(properties.getDownloadExpiry(), TimeUnit.MINUTES)
                             .extraQueryParams(reqParams)
                             .build());
+        } catch (Exception e) {
+            log.error(LOG_TEMPLATE, MinioPlusErrorCode.CREATE_DOWNLOAD_URL_FAILED.getMessage(), e.getMessage(), e);
+            throw new MinioPlusException(MinioPlusErrorCode.CREATE_DOWNLOAD_URL_FAILED);
+        }
+    }
+
+    @Override
+    public void getDownloadObject(String fileName, String bucketName, HttpServletResponse response) {
+        try {
+            InputStream inputStream = this.getClient().getObject(GetObjectArgs.builder().bucket(bucketName).object("2025/01/f7f6ee96ed887cdd1962e05567ee1676").build()).get();
+            IoUtil.copy(inputStream,response.getOutputStream());
         } catch (Exception e) {
             log.error(LOG_TEMPLATE, MinioPlusErrorCode.CREATE_DOWNLOAD_URL_FAILED.getMessage(), e.getMessage(), e);
             throw new MinioPlusException(MinioPlusErrorCode.CREATE_DOWNLOAD_URL_FAILED);

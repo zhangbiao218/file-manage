@@ -23,4 +23,7 @@ public class FileCompleteDTO {
     @ApiModelProperty(value = "文件md5", required = true)
     private List<String> partMd5List;
 
+    @ApiModelProperty(value = "文件的唯一key", required = true)
+    private String fileKey;
+
 }

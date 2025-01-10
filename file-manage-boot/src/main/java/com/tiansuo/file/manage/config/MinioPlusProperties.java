@@ -76,7 +76,8 @@ public class MinioPlusProperties {
         /**
          * 分块大小，配置单位为byte，默认为5242880(5MB)
          */
-        private int size = 5242880;
+        //private int size = 5242880;
+        private int size = 5120;
 
         /**
          * 分块上传时建议并发数，默认为3

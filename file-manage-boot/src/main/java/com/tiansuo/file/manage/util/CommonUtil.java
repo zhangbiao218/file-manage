@@ -11,11 +11,11 @@ public class CommonUtil {
 
     /**
      * 取得对象名称
-     * @param md5 文件MD5值
+     * @param fileMd5 文件fileMd5
      * @return 对象名称
      */
-    public static String getObjectName(String md5){
-        return CommonUtil.getPathByDate() + "/" + md5;
+    public static String getObjectName(String fileMd5){
+        return CommonUtil.getPathByDate() + "/" + fileMd5;
     }
 
     /**

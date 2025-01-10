@@ -24,6 +24,9 @@ public enum MinioPlusErrorCode {
     FILE_PREVIEW_WRITE_FAILED(1007,"缩略图生成失败"),
     FILE_ICON_FAILED(1008,"图标获取失败"),
     FILE_CREATE_FAILED(1009,"文件创建失败"),
+    FILE_MD5_CHECK_FAILED(1010,"fileMd5不能为空"),
+    FILE_BIND_BUSINESS_FAILED(1011,"文件绑定业务失败,文件不存在"),
+
 
     /**
      * MinIO 异常

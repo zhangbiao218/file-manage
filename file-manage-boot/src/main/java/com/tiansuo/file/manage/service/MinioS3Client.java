@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import com.tiansuo.file.manage.model.vo.ListParts;
 import io.minio.UploadPartResponse;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.List;
 
@@ -78,6 +79,15 @@ public interface MinioS3Client {
     String getDownloadUrl(String fileName, String contentType, String bucketName, String objectName);
 
     /**
+     * 取得下载文件流
+     * @param fileName 文件全名含扩展名
+     * @param bucketName 桶名称
+     * @param response 响应
+     * @return 下载地址
+     */
+    void getDownloadObject(String fileName, String bucketName, HttpServletResponse response);
+
+    /**
      * 取得图片预览链接
      * @param contentType 数据类型
      * @param bucketName 桶名称
@@ -86,15 +96,7 @@ public interface MinioS3Client {
      */
     String getPreviewUrl(String contentType, String bucketName, String objectName);
 
-    /**
-     * 分片文件上传
-     * @param bucketName 桶名称
-     * @param objectName 对象名称含路径
-     * @param stream 文件流
-     * @param size 文件长度
-     * @param contentType 文件类型
-     * @return 是否成功
-     */
+
     /**
      * 前端通过后端上传分片到MinIO
      * @param  bucketName MinIO桶名称

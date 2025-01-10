@@ -28,8 +28,8 @@ public class FileCheckDTO {
     @ApiModelProperty(value = "文件长度", required = true)
     private Long fileSize;
 
-    @ApiModelProperty(value = "是否私有 false:否 true:是")
-    private Boolean isPrivate;
+    @ApiModelProperty(value = "是否私有 0:否 1:是")
+    private Integer isPrivate = 0;
 
 
 }

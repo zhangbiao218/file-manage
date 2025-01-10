@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+<!--    <springProperty scope="context" name="springAppName" source="spring.application.name"/>
+    <springProperty scope="context" name="serverPort" source="server.port"/>
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        &lt;!&ndash;logstash的服务地址和端口，可以实际情况设置&ndash;&gt;
+        <destination>127.0.0.1:5044</destination>
+        &lt;!&ndash; 日志输出编码 &ndash;&gt;
+        <encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>Asia/Shanghai</timeZone>
+                </timestamp>
+                <pattern>
+                    {
+                    &lt;!&ndash;应用名称 &ndash;&gt;
+                    "appName": "${springAppName}-${serverPort}",
+                    &lt;!&ndash;打印时间 &ndash;&gt;
+                    "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                    &lt;!&ndash;线程名称 &ndash;&gt;
+                    "thread": "%thread",
+                    &lt;!&ndash;日志级别 &ndash;&gt;
+                    "level": "%level",
+                    &lt;!&ndash;类名称 &ndash;&gt;
+                    "logger_name": "%logger",
+                    &lt;!&ndash;日志信息 &ndash;&gt;
+                    "message": "%msg",
+                    &lt;!&ndash;日志堆栈 &ndash;&gt;
+                    "stack_trace": "%exception"
+                    }
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>-->
+
+
+    <!-- 定义控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 定义文件输出 -->
+<!--    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/autoclave.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>-->
+
+
+    <springProfile name="dev">
+        <root level="info">
+            <!--<appender-ref ref="FILE"/>-->
+            <appender-ref ref="CONSOLE"/>
+            <!--<appender-ref ref="LOGSTASH"/>-->
+        </root>
+    </springProfile>
+
+
+
+</configuration>

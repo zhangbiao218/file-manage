@@ -17,6 +17,9 @@ public class FileUploadResultVo {
     @ApiModelProperty(value = "MIME类型")
     private String fileMimeType;
 
+    @ApiModelProperty(value = "md5值")
+    private String fileMd5;
+
     @ApiModelProperty(value = "文件后缀")
     private String fileSuffix;
 

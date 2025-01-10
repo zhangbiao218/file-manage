@@ -25,13 +25,10 @@ public class FileMetadataInfoDTO {
     @ApiModelProperty(value = "存储桶")
     private String bucket;
 
-    @ApiModelProperty(value = "是否私有 false:否 true:是")
+    @ApiModelProperty(value = "是否私有 0:否 1:是")
     private Boolean isPrivate;
 
-    @ApiModelProperty(value = "状态 false:未完成 true:已完成")
+    @ApiModelProperty(value = "状态 0:未完成 1:已完成")
     private Boolean isFinished;
-
-    @ApiModelProperty(value = "创建人")
-    private String createUser;
 
 }
