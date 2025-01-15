@@ -13,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
 /**
  * 继承MinioClient重写
  * @author zhangb
- * @since  2024/5/22
  */
 public class CustomMinioClient extends MinioAsyncClient {
 

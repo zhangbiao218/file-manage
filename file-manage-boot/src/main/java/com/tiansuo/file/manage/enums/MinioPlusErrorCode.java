@@ -1,9 +1,8 @@
-package com.tiansuo.file.manage.constant;
+package com.tiansuo.file.manage.enums;
 
 /**
  * MinIO Plus 错误码
  * @author zhangb
- * @since  2024/05/26
  */
 public enum MinioPlusErrorCode {
 

@@ -11,7 +11,6 @@ import java.util.List;
  * 创建上传链接请求参数
  *
  * @author zhangb
- * @since  2024/05/29
  */
 @Getter
 @Setter

@@ -12,7 +12,6 @@ import java.util.List;
  * MinIO S3文件存储引擎接口定义
  *
  * @author zhangb
- * @since  2024/06/03
  */
 public interface MinioS3Client {
 
@@ -80,12 +79,12 @@ public interface MinioS3Client {
 
     /**
      * 取得下载文件流
-     * @param fileName 文件全名含扩展名
+     * @param objectName 对象名称含路径
      * @param bucketName 桶名称
      * @param response 响应
      * @return 下载地址
      */
-    void getDownloadObject(String fileName, String bucketName, HttpServletResponse response);
+    void getDownloadObject(String objectName, String bucketName, HttpServletResponse response);
 
     /**
      * 取得图片预览链接

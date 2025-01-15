@@ -1,4 +1,4 @@
-package com.tiansuo.file.manage.constant;
+package com.tiansuo.file.manage.enums;
 
 
 import cn.hutool.core.util.ArrayUtil;
@@ -9,7 +9,6 @@ import java.util.Arrays;
  * 桶策略枚举类
  *
  * @author zhangb
- * @since 2023/06/26
  */
 public enum StorageBucketEnums {
 

@@ -6,7 +6,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.tiansuo.file.manage.config.MinioPlusProperties;
-import com.tiansuo.file.manage.constant.MinioPlusErrorCode;
+import com.tiansuo.file.manage.constant.CommonConstant;
+import com.tiansuo.file.manage.enums.MinioPlusErrorCode;
 import com.tiansuo.file.manage.exception.MinioPlusException;
 import com.tiansuo.file.manage.model.vo.ListParts;
 import com.tiansuo.file.manage.service.MinioS3Client;
@@ -29,7 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -37,24 +37,11 @@ import java.util.concurrent.TimeUnit;
  * MinIO S3文件存储引擎接口定义实现类
  *
  * @author zhangb
- * @since 2024/11/14
  */
 @Slf4j
 @Service
 public class MinioS3ClientImpl implements MinioS3Client {
 
-    /**
-     * MinIO中上传编号名称
-     */
-    private static final String UPLOAD_ID = "uploadId";
-    /**
-     * 分片上传块号名称
-     */
-    private static final String PART_NUMBER = "partNumber";
-    /**
-     * 日志打印
-     */
-    private static final String LOG_TEMPLATE = "{}:{}";
 
     @Autowired
     private MinioPlusProperties properties;
@@ -86,11 +73,11 @@ public class MinioS3ClientImpl implements MinioS3Client {
             return this.getClient().bucketExists(BucketExistsArgs.builder().bucket(bucketName).build()).get();
         } catch (InsufficientDataException | InternalException | InvalidKeyException | IOException |
                 NoSuchAlgorithmException | XmlParserException | ExecutionException e) {
-            log.error(LOG_TEMPLATE, MinioPlusErrorCode.BUCKET_EXISTS_FAILED.getMessage(), e.getMessage(), e);
+            log.error("{}:{}", MinioPlusErrorCode.BUCKET_EXISTS_FAILED.getMessage(), e.getMessage(), e);
             throw new MinioPlusException(MinioPlusErrorCode.BUCKET_EXISTS_FAILED);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // 重新设置中断状态
-            log.error(LOG_TEMPLATE, MinioPlusErrorCode.BUCKET_EXISTS_FAILED.getMessage(), e.getMessage(), e);
+            log.error("{}:{}", MinioPlusErrorCode.BUCKET_EXISTS_FAILED.getMessage(), e.getMessage(), e);
             throw new MinioPlusException(MinioPlusErrorCode.BUCKET_EXISTS_FAILED);
         }
     }
@@ -104,7 +91,7 @@ public class MinioS3ClientImpl implements MinioS3Client {
                 this.getClient().makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
             }
         } catch (Exception e) {
-            log.error(LOG_TEMPLATE, MinioPlusErrorCode.MAKE_BUCKET_FAILED.getMessage(), e.getMessage(), e);
+            log.error("{}:{}", MinioPlusErrorCode.MAKE_BUCKET_FAILED.getMessage(), e.getMessage(), e);
             throw new MinioPlusException(MinioPlusErrorCode.MAKE_BUCKET_FAILED);
         }
     }
@@ -121,7 +108,7 @@ public class MinioS3ClientImpl implements MinioS3Client {
             CreateMultipartUploadResponse createMultipartUploadResponse = this.getClient().createMultipartUploadAsync(bucketName, null, objectName, reqParams, null).get();
             return createMultipartUploadResponse.result().uploadId();
         } catch (Exception e) {
-            log.error(LOG_TEMPLATE, MinioPlusErrorCode.CREATE_MULTIPART_UPLOAD_FAILED.getMessage(), e.getMessage(), e);
+            log.error("{}:{}", MinioPlusErrorCode.CREATE_MULTIPART_UPLOAD_FAILED.getMessage(), e.getMessage(), e);
             throw new MinioPlusException(MinioPlusErrorCode.CREATE_MULTIPART_UPLOAD_FAILED);
         }
     }
@@ -164,8 +151,8 @@ public class MinioS3ClientImpl implements MinioS3Client {
             }
 
         } catch (Exception e) {
-            // 查询分片失败，打印日志，返回空的分片信息
-            log.error(LOG_TEMPLATE, MinioPlusErrorCode.LIST_PARTS_FAILED.getMessage(), e.getMessage());
+            // 查询分片失败
+            log.error("{}:{}", MinioPlusErrorCode.LIST_PARTS_FAILED.getMessage(), e.getMessage());
         }
 
         return listParts;
@@ -175,8 +162,8 @@ public class MinioS3ClientImpl implements MinioS3Client {
     public String getUploadObjectUrl(String bucketName, String objectName, String uploadId, String partNumber) {
 
         Map<String, String> queryParams = Maps.newHashMapWithExpectedSize(2);
-        queryParams.put(UPLOAD_ID, uploadId);
-        queryParams.put(PART_NUMBER, partNumber);
+        queryParams.put(CommonConstant.UPLOAD_ID, uploadId);
+        queryParams.put(CommonConstant.PART_NUMBER, partNumber);
 
         try {
             return this.getClient().getPresignedObjectUrl(
@@ -188,7 +175,7 @@ public class MinioS3ClientImpl implements MinioS3Client {
                             .extraQueryParams(queryParams)
                             .build());
         } catch (Exception e) {
-            log.error(LOG_TEMPLATE, MinioPlusErrorCode.CREATE_UPLOAD_URL_FAILED.getMessage(), e.getMessage(), e);
+            log.error("{}:{}", MinioPlusErrorCode.CREATE_UPLOAD_URL_FAILED.getMessage(), e.getMessage(), e);
             throw new MinioPlusException(MinioPlusErrorCode.CREATE_UPLOAD_URL_FAILED);
         }
     }
@@ -209,18 +196,18 @@ public class MinioS3ClientImpl implements MinioS3Client {
                             .extraQueryParams(reqParams)
                             .build());
         } catch (Exception e) {
-            log.error(LOG_TEMPLATE, MinioPlusErrorCode.CREATE_DOWNLOAD_URL_FAILED.getMessage(), e.getMessage(), e);
+            log.error("{}:{}", MinioPlusErrorCode.CREATE_DOWNLOAD_URL_FAILED.getMessage(), e.getMessage(), e);
             throw new MinioPlusException(MinioPlusErrorCode.CREATE_DOWNLOAD_URL_FAILED);
         }
     }
 
     @Override
-    public void getDownloadObject(String fileName, String bucketName, HttpServletResponse response) {
+    public void getDownloadObject(String objectName, String bucketName, HttpServletResponse response) {
         try {
-            InputStream inputStream = this.getClient().getObject(GetObjectArgs.builder().bucket(bucketName).object("2025/01/f7f6ee96ed887cdd1962e05567ee1676").build()).get();
+            InputStream inputStream = this.getClient().getObject(GetObjectArgs.builder().bucket(bucketName).object(objectName).build()).get();
             IoUtil.copy(inputStream,response.getOutputStream());
         } catch (Exception e) {
-            log.error(LOG_TEMPLATE, MinioPlusErrorCode.CREATE_DOWNLOAD_URL_FAILED.getMessage(), e.getMessage(), e);
+            log.error("{}:{}", MinioPlusErrorCode.CREATE_DOWNLOAD_URL_FAILED.getMessage(), e.getMessage(), e);
             throw new MinioPlusException(MinioPlusErrorCode.CREATE_DOWNLOAD_URL_FAILED);
         }
     }
@@ -241,7 +228,7 @@ public class MinioS3ClientImpl implements MinioS3Client {
                             .extraQueryParams(reqParams)
                             .build());
         } catch (Exception e) {
-            log.error(LOG_TEMPLATE, MinioPlusErrorCode.CREATE_PREVIEW_URL_FAILED.getMessage(), e.getMessage(), e);
+            log.error("{}:{}", MinioPlusErrorCode.CREATE_PREVIEW_URL_FAILED.getMessage(), e.getMessage(), e);
             throw new MinioPlusException(MinioPlusErrorCode.CREATE_PREVIEW_URL_FAILED);
         }
     }
@@ -272,7 +259,7 @@ public class MinioS3ClientImpl implements MinioS3Client {
             throw new MinioPlusException(MinioPlusErrorCode.WRITE_FAILED);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // 重新设置中断状态
-            log.error(LOG_TEMPLATE, MinioPlusErrorCode.BUCKET_EXISTS_FAILED.getMessage(), e.getMessage(), e);
+            log.error("{}:{}", MinioPlusErrorCode.BUCKET_EXISTS_FAILED.getMessage(), e.getMessage(), e);
             throw new MinioPlusException(MinioPlusErrorCode.BUCKET_EXISTS_FAILED);
         }
 

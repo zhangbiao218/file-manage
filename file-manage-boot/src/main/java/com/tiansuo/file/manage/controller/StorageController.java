@@ -1,10 +1,6 @@
 package com.tiansuo.file.manage.controller;
 
-import cn.hutool.core.io.IoUtil;
-import com.sun.xml.internal.bind.v2.TODO;
-import com.tiansuo.file.manage.constant.MinioPlusErrorCode;
-import com.tiansuo.file.manage.constant.StorageBucketEnums;
-import com.tiansuo.file.manage.exception.MinioPlusException;
+import com.tiansuo.file.manage.enums.MinioPlusErrorCode;
 import com.tiansuo.file.manage.model.dto.BusinessBindFileDTO;
 import com.tiansuo.file.manage.model.dto.FileCheckDTO;
 import com.tiansuo.file.manage.model.dto.FileCompleteDTO;
@@ -18,25 +14,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.util.List;
 
-/**
- * 对象存储标准接口定义
- * 本类的方法是给前端使用的方法
- *
- * @author zhangb
- * @since 2024/6/18
- */
-@Api("文件上传")
+
+@Api("文件服务接口")
 @Slf4j
 @RestController
 @RequestMapping("/storage")
@@ -48,15 +33,6 @@ public class StorageController {
     @Autowired
     private StorageService storageService;
 
-
-    //TODO 1,不需要分片的文件上传,2需要分片的文件上传
-
-
-    //1,前端调用文件上传,
-    // 2,返回给前端地址,文件名,id,大小,
-    // 3,前端把这些参数以及表单的其他内容一起提交表单,后端处理表单的时候,根据前端传的这些参数在文件记录表里插入一条数据,需要在提供一个接口保存文件记录以及和业务的关联关系
-    //4,后端想再次获取文件的时候,需要根据业务的id去文件记录表查询到相应的路径,包括对文件的删除,修改,都是在后端保存表单信息的时候调用处理
-    //5,后续需增加定时任务处理,前端表单只上传了个文件,未保存表单,导致文件是冗余文件的逻辑
 
     /**
      * 上传文件(小文件不分片)
@@ -109,7 +85,7 @@ public class StorageController {
      * @param fileCompleteDTO 文件完成入参DTO
      * @return 是否成功
      */
-    @ApiOperation(value = "文件上传完成")
+    @ApiOperation(value = "文件上传完成(合并)")
     @PostMapping("/upload/complete")
     public ResultModel<Object> complete(@RequestBody FileCompleteDTO fileCompleteDTO) {
         CompleteResultVo completeResultVo = storageService.complete(fileCompleteDTO.getFileKey(), fileCompleteDTO.getPartMd5List());
@@ -142,21 +118,19 @@ public class StorageController {
     }
 
     /**
-     * 获取图像
+     * 获取图片原图
      *
      * @param fileKey 文件KEY
      * @return 原图地址
      */
-    @ApiOperation(value = "图片预览 - 原图")
+    @ApiOperation(value = "图片预览(原图)")
     @GetMapping("/image")
     public ResultModel<String> previewOriginal(@RequestParam(value = "fileKey") String fileKey) {
         return ResultModel.success(storageService.image(fileKey));
     }
 
     /**
-     * 文件预览
-     * 当文件为图片时，返回图片的缩略图
-     * 当文件不是图片时，返回文件类型图标
+     * 获取图片的缩略图
      *
      * @param fileKey 文件KEY
      * @return 缩略图地址
@@ -165,46 +139,8 @@ public class StorageController {
     @GetMapping("/preview")
     public  ResultModel<String> previewMedium(@RequestParam(value = "fileKey") String fileKey) {
         String url = storageService.preview(fileKey);
-        if (url.length() < 10) {
-            // 当返回值为文件类型时，取得图标
-            //url = ICON_PATH + url;
-        }
-
-        // 取得文件读取路径
         return  ResultModel.success(url) ;
     }
-
-    /**
-     * 根据文件类型取得图标
-     *
-     * @param fileType 文件扩展名
-     */
-    @ApiOperation(value = "获取图标")
-    @GetMapping("/icon")
-    public void icon(@RequestParam(value = "fileType") String fileType) {
-        try {
-            // 根据文件后缀取得桶
-            String storageBucket = StorageBucketEnums.getBucketByFileSuffix(fileType);
-
-            ClassPathResource cpr = new ClassPathResource(storageBucket + ".png");
-
-            byte[] bytes = FileCopyUtils.copyToByteArray(cpr.getInputStream());
-
-            ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            attr.getResponse().setHeader("content-disposition", "inline");
-            attr.getResponse().setHeader("Content-Length", String.valueOf(bytes.length));
-            try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes)) {
-                IoUtil.copy(inputStream, attr.getResponse().getOutputStream());
-            }
-        } catch (Exception e) {
-            log.error(MinioPlusErrorCode.FILE_ICON_FAILED.getMessage(), e);
-            // 图标获取失败
-            throw new MinioPlusException(MinioPlusErrorCode.FILE_ICON_FAILED);
-        }
-    }
-
-    //todo 提供绑定businessKey的接口,和根据这个key获取文件下载地址的接口
-    //0,1的优化,日志的优化,实体类的优化
 
     /**
      * 绑定业务数据和文件数据

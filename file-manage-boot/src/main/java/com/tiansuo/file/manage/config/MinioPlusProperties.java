@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
  * MinioPlus配置类
  *
  * @author zhangb
- * @since 2024/05/22
  */
 @Getter
 @Setter
@@ -77,7 +76,7 @@ public class MinioPlusProperties {
          * 分块大小，配置单位为byte，默认为5242880(5MB)
          */
         //private int size = 5242880;
-        private int size = 5120;
+        private int size = 5242880;
 
         /**
          * 分块上传时建议并发数，默认为3

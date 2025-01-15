@@ -1,22 +1,15 @@
 package com.tiansuo.file.manage.service;
 
-import cn.hutool.core.lang.Pair;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import com.tiansuo.file.manage.model.dto.FileMetadataInfoDTO;
-import com.tiansuo.file.manage.model.entity.FileMetadataInfo;
+
 import com.tiansuo.file.manage.model.vo.*;
-import com.tiansuo.file.manage.response.ResultModel;
-import io.minio.UploadPartResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
 import java.util.List;
 
 /**
  * MinIO Plus 接口定义
  * @author zhangb
- * @since  2024/06/05
  */
 public interface StorageService {
 
@@ -79,12 +72,6 @@ public interface StorageService {
      */
     String preview(String fileKey);
 
-    /**
-     * 根据文件key删除文件
-     * @param fileKey 文件key
-     * @return 是否成功
-     */
-    Boolean remove(String fileKey);
 
     /**
      * 上传文件(小文件不分片)
@@ -93,11 +80,30 @@ public interface StorageService {
      */
     FileUploadResultVo uploadFile(MultipartFile file);
 
+    /**
+     * 绑定上传文件所属业务数据
+     * @param fileKeyList 待绑定文件的filekey
+     * @param businessKey 业务数据唯一标识
+     * @return true 成功
+     */
     Boolean bindBusinessAndFile(List<String> fileKeyList, String businessKey);
 
+    /**
+     * 根据业务逐渐获取所绑定的文件信息
+     * @param businessKey 业务主键
+     * @return list 文件列表
+     */
     List<FileUploadResultVo> getFileByBusinessKey(String businessKey);
 
+    /**
+     * 根据业务主键删除文件
+     * @param businessKey  业务主键
+     */
     Boolean deleteFileByBusinessKey(String businessKey);
 
+    /**
+     * 根据文件key删除文件
+     * @param fileKey 文件key
+     */
     Boolean deleteFileByFileKey(String fileKey);
 }

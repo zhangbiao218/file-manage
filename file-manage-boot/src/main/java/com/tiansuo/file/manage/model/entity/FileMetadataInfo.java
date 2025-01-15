@@ -17,7 +17,6 @@ import java.util.Date;
  * 文件元数据信息VO
  *
  * @author zhangb
- * @since 2023-06-26
  **/
 @Accessors(chain = true)
 @Getter
