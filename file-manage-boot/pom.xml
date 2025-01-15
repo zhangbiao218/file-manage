@@ -22,7 +22,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>2.7.18</version>
         </dependency>
 
         <!-- SpringCloud Alibaba 微服务 -->
@@ -30,13 +29,17 @@
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-alibaba-dependencies</artifactId>
             <version>2021.0.5.0</version>
+            <type>pom</type>
+            <scope>import</scope>
         </dependency>
 
         <!-- SpringBoot 依赖配置 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-dependencies</artifactId>
-            <version>2.7.18</version>
+            <version>2.7.15</version>
+            <type>pom</type>
+            <scope>import</scope>
         </dependency>
         <!--bootstrap-->
         <dependency>
@@ -141,4 +144,20 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Maven 打包插件 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
