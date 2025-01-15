@@ -12,7 +12,6 @@ import java.util.List;
  * 文件完整性校验结果VO
  *
  * @author zhangb
- * @since 2023-06-26
  **/
 @Getter
 @Setter

@@ -13,7 +13,6 @@ import java.util.List;
  * 文件元数据服务接口定义
  *
  * @author zhangb
- * @since 2023/06/26
  */
 public interface MetadataMapper extends BaseMapper<FileMetadataInfo> {
 

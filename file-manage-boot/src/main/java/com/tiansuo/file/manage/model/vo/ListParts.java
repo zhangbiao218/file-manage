@@ -12,7 +12,6 @@ import java.util.List;
  * 分片信息列表
  *
  * @author zhangb
- * @since  2024/11/14
  */
 @Getter
 @Setter

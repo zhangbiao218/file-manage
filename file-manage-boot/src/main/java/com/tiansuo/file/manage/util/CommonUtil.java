@@ -1,11 +1,11 @@
 package com.tiansuo.file.manage.util;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
+import com.tiansuo.file.manage.constant.CommonConstant;
 
 /**
  * 对象存储工具类
  * @author zhangb
- * @since  2024/05/23
  */
 public class CommonUtil {
 
@@ -15,7 +15,7 @@ public class CommonUtil {
      * @return 对象名称
      */
     public static String getObjectName(String fileMd5){
-        return CommonUtil.getPathByDate() + "/" + fileMd5;
+        return CommonUtil.getPathByDate() + CommonConstant.STRING_FXG + fileMd5;
     }
 
     /**
@@ -23,7 +23,7 @@ public class CommonUtil {
      * @return 路径
      */
     public static String getPathByDate(){
-        return LocalDateTimeUtil.format(LocalDateTimeUtil.now(), "yyyy/MM");
+        return LocalDateTimeUtil.format(LocalDateTimeUtil.now(), CommonConstant.STRING_DATE_FORMAT1);
     }
 
 }

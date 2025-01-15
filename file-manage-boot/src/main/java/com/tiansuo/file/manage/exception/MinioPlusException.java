@@ -1,12 +1,11 @@
 package com.tiansuo.file.manage.exception;
 
 
-import com.tiansuo.file.manage.constant.MinioPlusErrorCode;
+import com.tiansuo.file.manage.enums.MinioPlusErrorCode;
 
 /**
  * MinioPlus专用异常定义
  * @author zhangb
- * @since  2024/05/26
  */
 public class MinioPlusException extends RuntimeException {
 

@@ -11,7 +11,6 @@ import lombok.ToString;
  * 文件预检查DTO
  *
  * @author zhangb
- * @since 2023/6/26
  */
 @Getter
 @Setter

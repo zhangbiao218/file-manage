@@ -9,7 +9,6 @@ import java.util.List;
  * 创建上传url
  *
  * @author zhangb
- * @since  2023/6/29
  */
 @Getter
 @Setter
@@ -27,7 +26,7 @@ public class CreateUploadUrlReqBO {
      */
     private Long fileSize;
     /**
-     * 是否断点续传 0:否 1:是,默认非断点续传
+     * 是否断点续传 false:否 true:是,默认非断点续传
      */
     private Boolean isSequel = Boolean.FALSE;
     /**********************************************************以下参数是断点续传必传的数据-start**************************************************/
